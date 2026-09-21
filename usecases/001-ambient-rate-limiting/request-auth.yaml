@@ -1,0 +1,18 @@
+apiVersion: security.istio.io/v1
+kind: RequestAuthentication
+metadata:
+  name: gateway-jwt
+  namespace: ingress
+spec:
+  targetRefs:
+    - kind: Gateway
+      group: gateway.networking.k8s.io
+      name: gateway
+
+  jwtRules:
+    - issuer: "http://keycloak.keycloak.svc.cluster.local:8080/realms/master"
+      jwksUri: "http://keycloak.keycloak.svc.cluster.local:8080/realms/master/protocol/openid-connect/certs"
+
+      outputClaimToHeaders:
+        - header: x-jwt-tenant
+          claim: client_id
