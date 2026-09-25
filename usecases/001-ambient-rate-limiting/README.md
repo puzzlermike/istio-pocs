@@ -68,7 +68,9 @@ kubectl delete -f filter-jwt-dynamic-tenancy.yaml
 
 ## Lessons Learned
 
-- Rate limiting is not supported for Waypoint proxies, see https://istio.io/latest/docs/ambient/migrate/#what-is-not-supported
+- EnvoyFilters are not supported for Waypoint proxies, see https://istio.io/latest/docs/ambient/migrate/#what-is-not-supported
+- EnvoyFilters might be supported in the future for Waypoint proxies, see https://github.com/istio/istio/issues/43720
+- Rate limiting east-west traffic using Waypoint proxies might be possible using [TrafficExtensions](https://istio.io/latest/blog/2026/traffic-extension-api/) (not tested)
 - Local rate limit state is persisted per Gateway Pod
 - Rate limit per tenant is possible (e.g., by using HTTP headers)
 - Rate limit token bucket scoped to OAuth 2.0/OIDC token claims is possible; EnvoyFilter leverages provided HTTP header value configured by the RequestAuthentication CR
