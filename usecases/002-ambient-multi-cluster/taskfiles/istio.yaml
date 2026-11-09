@@ -4,6 +4,7 @@ vars:
   GATEWAY_API_VERSION: v1.7.0
   GATEWAY_API_URL: https://github.com/kubernetes-sigs/gateway-api/releases/download/{{.GATEWAY_API_VERSION}}/experimental-install.yaml
   ISTIO_BASE_DIR: "{{.ROOT_DIR}}/istio/istio-base"
+  ISTIOD_DIR: "{{.ROOT_DIR}}/istio/istiod"
 
 tasks:
   install-gateway-api-all:
@@ -16,10 +17,20 @@ tasks:
     - task: delete-gateway-api-ecom-cloud
     - task: delete-gateway-api-ecom-onprem
 
+  install-istio-all:
+    cmds:
+    - task: install-istio-base-all
+    - task: install-istiod-all
+
   install-istio-base-all:
     cmds:
     - task: install-istio-base-ecom-cloud
     - task: install-istio-base-ecom-onprem
+
+  install-istiod-all:
+    cmds:
+    - task: install-istiod-ecom-cloud
+    - task: install-istiod-ecom-onprem
 
   install-gateway-api-ecom-cloud:
     cmds:
@@ -57,6 +68,20 @@ tasks:
       vars:
         CONTEXT: kind-ecom-onprem
 
+  install-istiod-ecom-cloud:
+    cmds:
+    - task: install-istiod
+      vars:
+        CONTEXT: kind-ecom-cloud
+        DIR: "{{.ISTIOD_DIR}}/ecom-cloud"
+
+  install-istiod-ecom-onprem:
+    cmds:
+    - task: install-istiod
+      vars:
+        CONTEXT: kind-ecom-onprem
+        DIR: "{{.ISTIOD_DIR}}/ecom-onprem"
+
   install-gateway-api:
     internal: true
     requires:
@@ -83,3 +108,12 @@ tasks:
     - kustomize build --enable-helm {{.ISTIO_BASE_DIR}} | kubectl apply --server-side --context {{.CONTEXT}} -f -
     status:
     - kubectl get crd wasmplugins.extensions.istio.io --context {{.CONTEXT}}
+
+  install-istiod:
+    internal: true
+    requires:
+      vars: [CONTEXT, DIR]
+    cmds:
+    - kustomize build --enable-helm {{.DIR}} | kubectl apply --server-side --context {{.CONTEXT}} -f -
+    status:
+    - kubectl get deployment istiod -n istio-system --context {{.CONTEXT}}

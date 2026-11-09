@@ -17,6 +17,9 @@ task cluster:clusters-up
 # install Gateway API into both clusters
 task istio:install-gateway-api-all
 
+# install Istio in both clusters
+task istio:install-istio-all
+
 # delete Gateway API from both clusters
 task istio:delete-gateway-api-all
 
