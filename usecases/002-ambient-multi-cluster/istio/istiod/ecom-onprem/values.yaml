@@ -1,0 +1,11 @@
+global:
+  meshID: ecom
+  multiCluster:
+    clusterName: ecom-onprem
+  network: ecom-onprem
+
+profile: ambient
+
+env:
+  AMBIENT_ENABLE_MULTI_NETWORK: "true"
+  AMBIENT_ENABLE_BAGGAGE: "true"
