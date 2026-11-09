@@ -14,6 +14,9 @@ The PoC consists of two clusters, `ecom-cloud` and `ecom-onprem`, each with thei
 # run cloud and onprem cluster
 task cluster:clusters-up
 
+# install Gateway API into both clusters
+task istio:install-gateway-api-all
+
 # cleanup clusters
 task cluster:clusters-down
 ```
