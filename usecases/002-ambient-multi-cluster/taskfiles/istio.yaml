@@ -5,6 +5,7 @@ vars:
   GATEWAY_API_URL: https://github.com/kubernetes-sigs/gateway-api/releases/download/{{.GATEWAY_API_VERSION}}/experimental-install.yaml
   ISTIO_BASE_DIR: "{{.ROOT_DIR}}/istio/istio-base"
   ISTIOD_DIR: "{{.ROOT_DIR}}/istio/istiod"
+  ISTIO_CNI_DIR: "{{.ROOT_DIR}}/istio/istio-cni"
 
 tasks:
   install-gateway-api-all:
@@ -21,6 +22,7 @@ tasks:
     cmds:
     - task: install-istio-base-all
     - task: install-istiod-all
+    - task: install-istio-cni-all
 
   install-istio-base-all:
     cmds:
@@ -31,6 +33,11 @@ tasks:
     cmds:
     - task: install-istiod-ecom-cloud
     - task: install-istiod-ecom-onprem
+
+  install-istio-cni-all:
+    cmds:
+    - task: install-istio-cni-ecom-cloud
+    - task: install-istio-cni-ecom-onprem
 
   install-gateway-api-ecom-cloud:
     cmds:
@@ -82,6 +89,18 @@ tasks:
         CONTEXT: kind-ecom-onprem
         DIR: "{{.ISTIOD_DIR}}/ecom-onprem"
 
+  install-istio-cni-ecom-cloud:
+    cmds:
+    - task: install-istio-cni
+      vars:
+        CONTEXT: kind-ecom-cloud
+
+  install-istio-cni-ecom-onprem:
+    cmds:
+    - task: install-istio-cni
+      vars:
+        CONTEXT: kind-ecom-onprem
+
   install-gateway-api:
     internal: true
     requires:
@@ -117,3 +136,12 @@ tasks:
     - kustomize build --enable-helm {{.DIR}} | kubectl apply --server-side --context {{.CONTEXT}} -f -
     status:
     - kubectl get deployment istiod -n istio-system --context {{.CONTEXT}}
+
+  install-istio-cni:
+    internal: true
+    requires:
+      vars: [CONTEXT]
+    cmds:
+    - kustomize build --enable-helm {{.ISTIO_CNI_DIR}} | kubectl apply --server-side --context {{.CONTEXT}} -f -
+    status:
+    - kubectl get daemonset istio-cni-node -n istio-system --context {{.CONTEXT}}
