@@ -8,6 +8,8 @@ Mesh properties:
 
 # Lessons Learned
 
+- Known limitations are listed here, https://istio.io/latest/docs/ambient/install/multicluster/#known-limitations
+
 # References
 - https://istio.io/latest/docs/ops/deployment/deployment-models/
 - https://istio.io/latest/docs/ambient/install/multicluster/
