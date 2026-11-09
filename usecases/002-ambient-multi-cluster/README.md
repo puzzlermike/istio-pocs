@@ -6,6 +6,18 @@ Mesh properties:
 - [Multi-network](https://istio.io/latest/docs/ops/deployment/deployment-models/#multiple-networks)
 - Single [Trust-domain](https://istio.io/latest/docs/ops/deployment/deployment-models/#trust-within-a-mesh)
 
+The PoC consists of two clusters, `ecom-cloud` and `ecom-onprem`, each with their own Istio control plane, communication between the clusters happens via dedicated east-west gateways.
+
+## Local Development
+
+```
+# run cloud and onprem cluster
+task cluster:clusters-up
+
+# cleanup clusters
+task cluster:clusters-down
+```
+
 # Lessons Learned
 
 - Known limitations are listed here, https://istio.io/latest/docs/ambient/install/multicluster/#known-limitations

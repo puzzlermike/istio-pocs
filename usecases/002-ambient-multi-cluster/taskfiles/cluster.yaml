@@ -1,0 +1,50 @@
+version: '3'
+
+tasks:
+  clusters-up:
+    cmds:
+    - task: ecom-cloud-cluster-up
+    - task: ecom-onprem-cluster-up
+
+  clusters-down:
+    cmds:
+    - task: ecom-cloud-cluster-down
+    - task: ecom-onprem-cluster-down
+
+  cluster-up:
+    cmds:
+    - kind create cluster --name={{.NAME}} --config={{.CONFIG}}
+    status:
+    - kind get clusters | grep -qx {{.NAME}}
+
+  cluster-down:
+    cmds:
+    - kind delete cluster --name={{.NAME}}
+    status:
+    - '! kind get clusters | grep -qx {{.NAME}}'
+
+  ecom-cloud-cluster-up:
+    cmds:
+    - task: cluster-up
+      vars:
+        NAME: ecom-cloud
+        CONFIG: "{{.ROOT_DIR}}/kind-config_ecom-cloud.yaml"
+
+  ecom-onprem-cluster-up:
+    cmds:
+    - task: cluster-up
+      vars:
+        NAME: ecom-onprem
+        CONFIG: "{{.ROOT_DIR}}/kind-config_ecom-onprem.yaml"
+
+  ecom-cloud-cluster-down:
+    cmds:
+    - task: cluster-down
+      vars:
+        NAME: ecom-cloud
+
+  ecom-onprem-cluster-down:
+    cmds:
+    - task: cluster-down
+      vars:
+        NAME: ecom-onprem

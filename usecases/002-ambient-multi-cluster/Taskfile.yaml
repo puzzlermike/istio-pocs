@@ -1,0 +1,4 @@
+version: '3'
+
+includes:
+  cluster: ./taskfiles/cluster.yaml
