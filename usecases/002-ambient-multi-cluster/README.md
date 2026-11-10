@@ -24,6 +24,9 @@ task istio:install-gateway-api-all
 # install Istio in both clusters
 task istio:install-istio-all
 
+# install east-west gateway in both clusters
+task istio:install-eastwest-gateway-all
+
 # delete Gateway API from both clusters
 task istio:delete-gateway-api-all
 
