@@ -24,6 +24,10 @@ task istio:install-gateway-api-all
 # install Istio in both clusters (base, shared root CA + per-cluster cacerts, istiod, CNI, ztunnel)
 task istio:install-istio-all
 
+# start cloud-provider-kind in a SEPARATE terminal and keep it running, it assigns
+# the LoadBalancer IP of the east-west gateways
+sudo cloud-provider-kind --enable-lb-port-mapping=false
+
 # install east-west gateway in both clusters
 task istio:install-eastwest-gateway-all
 
@@ -53,10 +57,15 @@ kubectl exec --context="kind-ecom-cloud" -n curl -c curl \
     "$(kubectl get pod --context="kind-ecom-cloud" -n curl -l \
     app=curl -o jsonpath='{.items[0].metadata.name}')" \
     -- curl -sS helloworld.helloworld:5000/hello
+kubectl exec --context="kind-ecom-onprem" -n curl -c curl \
+    "$(kubectl get pod --context="kind-ecom-onprem" -n curl -l \
+    app=curl -o jsonpath='{.items[0].metadata.name}')" \
+    -- curl -sS helloworld.helloworld:5000/hello
 ```
 
 ## Lessons Learned
 
+- `cloud-provider-kind` < v0.12.0 on macOS publishes every LoadBalancer port on the host, so the second east-west gateway (same port `15008`) never gets an IP. Use v0.12.0+ and run it with `--enable-lb-port-mapping=false`; clusters reach each other over the docker network
 - Known limitations are listed here, https://istio.io/latest/docs/ambient/install/multicluster/#known-limitations
 - The `istio-reader-service-account` service account can be used for cross-cluster service discovery
 - Services that should be accessed from other clusters must be labeled with `istio.io/global: "true"` 
