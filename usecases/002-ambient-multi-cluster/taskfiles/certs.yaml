@@ -1,0 +1,113 @@
+version: '3'
+
+vars:
+  CERTS_DIR: "{{.ROOT_DIR}}/certs"
+
+tasks:
+  generate-certs:
+    cmds:
+    - task: generate-ecom-cloud-ca
+    - task: generate-ecom-onprem-ca
+
+  create-cacerts-secrets:
+    cmds:
+    - task: create-cacerts-secret-ecom-cloud
+    - task: create-cacerts-secret-ecom-onprem
+
+  generate-ecom-cloud-ca:
+    cmds:
+    - task: generate-intermediate-ca
+      vars:
+        CA_NAME: ecom-cloud
+
+  generate-ecom-onprem-ca:
+    cmds:
+    - task: generate-intermediate-ca
+      vars:
+        CA_NAME: ecom-onprem
+
+  create-cacerts-secret-ecom-cloud:
+    cmds:
+    - task: create-cacerts-secret
+      vars:
+        CONTEXT: kind-ecom-cloud
+        CA_NAME: ecom-cloud
+
+  create-cacerts-secret-ecom-onprem:
+    cmds:
+    - task: create-cacerts-secret
+      vars:
+        CONTEXT: kind-ecom-onprem
+        CA_NAME: ecom-onprem
+
+  generate-root-ca:
+    internal: true
+    cmds:
+    - mkdir -p {{.CERTS_DIR}}/root
+    - openssl genrsa -out {{.CERTS_DIR}}/root/root-ca.key 4096
+    - >-
+      openssl req -x509 -new -nodes -sha256 -days 3650
+      -key {{.CERTS_DIR}}/root/root-ca.key
+      -out {{.CERTS_DIR}}/root/root-cert.pem
+      -subj "/O=ecom/CN=ecom Root CA"
+      -addext "basicConstraints=critical,CA:TRUE"
+      -addext "keyUsage=critical,keyCertSign,cRLSign"
+    status:
+    - test -f {{.CERTS_DIR}}/root/root-ca.key
+    - test -f {{.CERTS_DIR}}/root/root-cert.pem
+
+  generate-intermediate-ca:
+    internal: true
+    requires:
+      vars: [CA_NAME]
+    deps:
+    - generate-root-ca
+    vars:
+      CA_DIR: "{{.CERTS_DIR}}/{{.CA_NAME}}"
+    cmds:
+    - mkdir -p {{.CA_DIR}}
+    - openssl genrsa -out {{.CA_DIR}}/ca-key.pem 4096
+    - >-
+      openssl req -new -sha256
+      -key {{.CA_DIR}}/ca-key.pem
+      -out {{.CA_DIR}}/ca.csr
+      -subj "/O=ecom/CN={{.CA_NAME}} Intermediate CA"
+    - |
+      printf 'basicConstraints=critical,CA:TRUE,pathlen:1\nkeyUsage=critical,keyCertSign,cRLSign\nsubjectKeyIdentifier=hash\nauthorityKeyIdentifier=keyid,issuer\n' > {{.CA_DIR}}/ca.ext
+    - >-
+      openssl x509 -req -sha256 -days 1825
+      -in {{.CA_DIR}}/ca.csr
+      -CA {{.CERTS_DIR}}/root/root-cert.pem
+      -CAkey {{.CERTS_DIR}}/root/root-ca.key
+      -CAcreateserial
+      -extfile {{.CA_DIR}}/ca.ext
+      -out {{.CA_DIR}}/ca-cert.pem
+    - cat {{.CA_DIR}}/ca-cert.pem {{.CERTS_DIR}}/root/root-cert.pem > {{.CA_DIR}}/cert-chain.pem
+    - cp {{.CERTS_DIR}}/root/root-cert.pem {{.CA_DIR}}/root-cert.pem
+    - openssl verify -CAfile {{.CERTS_DIR}}/root/root-cert.pem {{.CA_DIR}}/ca-cert.pem
+    status:
+    - test -f {{.CA_DIR}}/ca-key.pem
+    - test -f {{.CA_DIR}}/ca-cert.pem
+    - test -f {{.CA_DIR}}/cert-chain.pem
+    - test -f {{.CA_DIR}}/root-cert.pem
+
+  create-cacerts-secret:
+    internal: true
+    requires:
+      vars: [CONTEXT, CA_NAME]
+    deps:
+    - task: generate-intermediate-ca
+      vars:
+        CA_NAME: "{{.CA_NAME}}"
+    vars:
+      CA_DIR: "{{.CERTS_DIR}}/{{.CA_NAME}}"
+    cmds:
+    - >-
+      kubectl create secret generic cacerts
+      --dry-run=client -o yaml
+      --namespace istio-system
+      --from-file=ca-cert.pem={{.CA_DIR}}/ca-cert.pem
+      --from-file=ca-key.pem={{.CA_DIR}}/ca-key.pem
+      --from-file=root-cert.pem={{.CA_DIR}}/root-cert.pem
+      --from-file=cert-chain.pem={{.CA_DIR}}/cert-chain.pem
+      | kubectl apply --context {{.CONTEXT}} -f -

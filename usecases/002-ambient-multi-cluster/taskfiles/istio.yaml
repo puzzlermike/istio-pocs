@@ -23,6 +23,7 @@ tasks:
   install-istio-all:
     cmds:
     - task: install-istio-base-all
+    - task: :certs:create-cacerts-secrets
     - task: install-istiod-all
     - task: install-istio-cni-all
     - task: install-ztunnel-all

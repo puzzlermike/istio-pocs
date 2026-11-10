@@ -21,7 +21,7 @@ task cluster:clusters-up
 # install Gateway API into both clusters
 task istio:install-gateway-api-all
 
-# install Istio in both clusters
+# install Istio in both clusters (base, shared root CA + per-cluster cacerts, istiod, CNI, ztunnel)
 task istio:install-istio-all
 
 # install east-west gateway in both clusters
