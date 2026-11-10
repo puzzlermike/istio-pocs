@@ -6,6 +6,7 @@ vars:
   ISTIO_BASE_DIR: "{{.ROOT_DIR}}/istio/istio-base"
   ISTIOD_DIR: "{{.ROOT_DIR}}/istio/istiod"
   ISTIO_CNI_DIR: "{{.ROOT_DIR}}/istio/istio-cni"
+  ZTUNNEL_DIR: "{{.ROOT_DIR}}/istio/ztunnel"
 
 tasks:
   install-gateway-api-all:
@@ -23,6 +24,7 @@ tasks:
     - task: install-istio-base-all
     - task: install-istiod-all
     - task: install-istio-cni-all
+    - task: install-ztunnel-all
 
   install-istio-base-all:
     cmds:
@@ -38,6 +40,11 @@ tasks:
     cmds:
     - task: install-istio-cni-ecom-cloud
     - task: install-istio-cni-ecom-onprem
+
+  install-ztunnel-all:
+    cmds:
+    - task: install-ztunnel-ecom-cloud
+    - task: install-ztunnel-ecom-onprem
 
   install-gateway-api-ecom-cloud:
     cmds:
@@ -101,6 +108,20 @@ tasks:
       vars:
         CONTEXT: kind-ecom-onprem
 
+  install-ztunnel-ecom-cloud:
+    cmds:
+    - task: install-ztunnel
+      vars:
+        CONTEXT: kind-ecom-cloud
+        DIR: "{{.ZTUNNEL_DIR}}/ecom-cloud"
+
+  install-ztunnel-ecom-onprem:
+    cmds:
+    - task: install-ztunnel
+      vars:
+        CONTEXT: kind-ecom-onprem
+        DIR: "{{.ZTUNNEL_DIR}}/ecom-onprem"
+
   install-gateway-api:
     internal: true
     requires:
@@ -145,3 +166,12 @@ tasks:
     - kustomize build --enable-helm {{.ISTIO_CNI_DIR}} | kubectl apply --server-side --context {{.CONTEXT}} -f -
     status:
     - kubectl get daemonset istio-cni-node -n istio-system --context {{.CONTEXT}}
+
+  install-ztunnel:
+    internal: true
+    requires:
+      vars: [CONTEXT, DIR]
+    cmds:
+    - kustomize build --enable-helm {{.DIR}} | kubectl apply --server-side --context {{.CONTEXT}} -f -
+    status:
+    - kubectl get daemonset ztunnel -n istio-system --context {{.CONTEXT}}
