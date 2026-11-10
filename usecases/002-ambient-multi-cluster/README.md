@@ -8,6 +8,10 @@ Mesh properties:
 
 The PoC consists of two clusters, `ecom-cloud` and `ecom-onprem`, each with their own Istio control plane, communication between the clusters happens via dedicated east-west gateways.
 
+## Architecture
+
+![Architecture](./assets/istio-ambient-mc-arch.svg)
+
 ## Local Development
 
 ```
