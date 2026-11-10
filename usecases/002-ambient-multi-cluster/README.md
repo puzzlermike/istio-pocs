@@ -37,11 +37,32 @@ task istio:delete-gateway-api-all
 task cluster:clusters-down
 ```
 
-# Lessons Learned
+## Samples
+
+### Hello World
+
+```
+# deploy helloworld app in both clusters
+task samples:helloworld-all
+
+# deploy curl app in both clusters
+task samples:curl-all
+
+# verify app traffic is load balanced across both clusters
+kubectl exec --context="kind-ecom-cloud" -n curl -c curl \
+    "$(kubectl get pod --context="kind-ecom-cloud" -n curl -l \
+    app=curl -o jsonpath='{.items[0].metadata.name}')" \
+    -- curl -sS helloworld.helloworld:5000/hello
+```
+
+## Lessons Learned
 
 - Known limitations are listed here, https://istio.io/latest/docs/ambient/install/multicluster/#known-limitations
 - The `istio-reader-service-account` service account can be used for cross-cluster service discovery
+- Services that should be accessed from other clusters must be labeled with `istio.io/global: "true"` 
+- In ambient mode, istiod builds the remote network gateway from the peer's east-west Gateway's status.addresses. It does not read spec.addresses for managed gateways
+- For a managed Gateway, status.addresses comes from the Service: the external addresses if any exist, otherwise the ClusterIP and hostname. A NodePort Service has no external address by default, so the ClusterIP is reported
 
-# References
+## References
 - https://istio.io/latest/docs/ops/deployment/deployment-models/
 - https://istio.io/latest/docs/ambient/install/multicluster/
