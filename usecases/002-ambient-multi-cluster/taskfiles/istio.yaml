@@ -75,12 +75,14 @@ tasks:
     - task: install-istio-base
       vars:
         CONTEXT: kind-ecom-cloud
+        DIR: "{{.ISTIO_BASE_DIR}}/ecom-cloud"
 
   install-istio-base-ecom-onprem:
     cmds:
     - task: install-istio-base
       vars:
         CONTEXT: kind-ecom-onprem
+        DIR: "{{.ISTIO_BASE_DIR}}/ecom-onprem"
 
   install-istiod-ecom-cloud:
     cmds:
@@ -143,9 +145,9 @@ tasks:
   install-istio-base:
     internal: true
     requires:
-      vars: [CONTEXT]
+      vars: [CONTEXT, DIR]
     cmds:
-    - kustomize build --enable-helm {{.ISTIO_BASE_DIR}} | kubectl apply --server-side --context {{.CONTEXT}} -f -
+    - kustomize build --enable-helm {{.DIR}} | kubectl apply --server-side --context {{.CONTEXT}} -f -
     status:
     - kubectl get crd wasmplugins.extensions.istio.io --context {{.CONTEXT}}
 
