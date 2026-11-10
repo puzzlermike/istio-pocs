@@ -1,0 +1,5 @@
+global:
+  network: ecom-onprem
+
+multiCluster:
+  clusterName: ecom-onprem
