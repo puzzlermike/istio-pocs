@@ -4,3 +4,4 @@ includes:
   cluster: ./taskfiles/cluster.yaml
   istio: ./taskfiles/istio.yaml
   certs: ./taskfiles/certs.yaml
+  remote: ./taskfiles/remote-secrets.yaml

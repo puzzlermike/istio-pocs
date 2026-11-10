@@ -27,6 +27,9 @@ task istio:install-istio-all
 # install east-west gateway in both clusters
 task istio:install-eastwest-gateway-all
 
+# create remote secrets (cross-cluster service discovery)
+task remote:create-remote-secrets-all
+
 # delete Gateway API from both clusters
 task istio:delete-gateway-api-all
 
@@ -37,6 +40,7 @@ task cluster:clusters-down
 # Lessons Learned
 
 - Known limitations are listed here, https://istio.io/latest/docs/ambient/install/multicluster/#known-limitations
+- The `istio-reader-service-account` service account can be used for cross-cluster service discovery
 
 # References
 - https://istio.io/latest/docs/ops/deployment/deployment-models/
