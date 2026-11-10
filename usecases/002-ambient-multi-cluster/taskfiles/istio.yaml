@@ -7,6 +7,7 @@ vars:
   ISTIOD_DIR: "{{.ROOT_DIR}}/istio/istiod"
   ISTIO_CNI_DIR: "{{.ROOT_DIR}}/istio/istio-cni"
   ZTUNNEL_DIR: "{{.ROOT_DIR}}/istio/ztunnel"
+  EASTWEST_DIR: "{{.ROOT_DIR}}/istio/eastwest-gateway"
 
 tasks:
   install-gateway-api-all:
@@ -45,6 +46,11 @@ tasks:
     cmds:
     - task: install-ztunnel-ecom-cloud
     - task: install-ztunnel-ecom-onprem
+
+  install-eastwest-gateway-all:
+    cmds:
+    - task: install-eastwest-gateway-ecom-cloud
+    - task: install-eastwest-gateway-ecom-onprem
 
   install-gateway-api-ecom-cloud:
     cmds:
@@ -124,6 +130,22 @@ tasks:
         CONTEXT: kind-ecom-onprem
         DIR: "{{.ZTUNNEL_DIR}}/ecom-onprem"
 
+  install-eastwest-gateway-ecom-cloud:
+    cmds:
+    - task: install-eastwest-gateway
+      vars:
+        CONTEXT: kind-ecom-cloud
+        NODE: ecom-cloud-control-plane
+        DIR: "{{.EASTWEST_DIR}}/ecom-cloud"
+
+  install-eastwest-gateway-ecom-onprem:
+    cmds:
+    - task: install-eastwest-gateway
+      vars:
+        CONTEXT: kind-ecom-onprem
+        NODE: ecom-onprem-control-plane
+        DIR: "{{.EASTWEST_DIR}}/ecom-onprem"
+
   install-gateway-api:
     internal: true
     requires:
@@ -177,3 +199,15 @@ tasks:
     - kustomize build --enable-helm {{.DIR}} | kubectl apply --server-side --context {{.CONTEXT}} -f -
     status:
     - kubectl get daemonset ztunnel -n istio-system --context {{.CONTEXT}}
+
+  install-eastwest-gateway:
+    internal: true
+    requires:
+      vars: [CONTEXT, NODE, DIR]
+    vars:
+      NODE_IP:
+        sh: docker inspect {{.NODE}} | jq -r '.[0].NetworkSettings.Networks.kind.IPAddress'
+    cmds:
+    - kustomize build {{.DIR}} | sed 's/__NODE_IP__/{{.NODE_IP}}/g' | kubectl apply --server-side --context {{.CONTEXT}} -f -
+    status:
+    - kubectl get gateway istio-eastwestgateway -n istio-system --context {{.CONTEXT}}

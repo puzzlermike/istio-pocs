@@ -1,6 +1,14 @@
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 name: ecom-cloud
+kubeadmConfigPatches:
+- |
+  kind: ClusterConfiguration
+  apiVersion: kubeadm.k8s.io/v1beta4
+  apiServer:
+    extraArgs:
+    - name: service-node-port-range
+      value: "15000-32767"
 nodes:
 - role: control-plane
   image: kindest/node:v1.36.4@sha256:099e049362a1526b2db71494e1947aae99bd16290d7c895f2b7ea312e3cbfaed
@@ -13,9 +21,4 @@ nodes:
     # Istio ingress gateway HTTPS
     - containerPort: 30443
       hostPort: 8443
-      protocol: TCP
-
-    # East-west gateway mTLS/HBONE
-    - containerPort: 31443
-      hostPort: 15443
       protocol: TCP
