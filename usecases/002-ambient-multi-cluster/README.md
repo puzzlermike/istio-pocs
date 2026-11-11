@@ -78,7 +78,8 @@ kubectl exec --context="kind-ecom-onprem" -n curl -c curl \
 - Services that should be accessed from other clusters must be labeled with `istio.io/global: "true"` 
 - In ambient mode, istiod builds the remote network gateway from the peer's east-west Gateway's status.addresses. It does not read spec.addresses for managed gateways
 - For a managed Gateway, status.addresses comes from the Service: the external addresses if any exist, otherwise the ClusterIP and hostname. A NodePort Service has no external address by default, so the ClusterIP is reported
-- pilot-agent environment variable `AMBIENT_ENABLE_MULTI_NETWORK_INGRESS`, If true and AMBIENT_ENABLE_MULTI_NETWORK is also true, it will enable ingress gateways to route requests to clusters on remote networks while by default ingress gateways will keep traffic local.
+- pilot-agent environment variable `AMBIENT_ENABLE_MULTI_NETWORK_INGRESS`, If true and AMBIENT_ENABLE_MULTI_NETWORK is also true, it will enable ingress gateways to route requests to clusters on remote networks while by default ingress gateways will keep traffic local
+- Traffic entering the ingress gateway stays within the local cluster when `AMBIENT_ENABLE_MULTI_NETWORK_INGRESS` is "false" (the default). Remote endpoints are not offered to the gateway at all, so there is also no failover to the other cluster. To use remote endpoints, set the flag to "true"; to prefer local endpoints with failover, additionally configure locality failover
 
 ## References
 - https://istio.io/latest/docs/ops/deployment/deployment-models/
