@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio-ingressgateway-options
+  namespace: istio-ingress
+data:
+  service: |
+    spec:
+      type: NodePort
+      ports:
+      - port: 80
+        nodePort: 30080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-ingress
+spec:
+  gatewayClassName: istio
+  infrastructure:
+    parametersRef:
+      group: ""
+      kind: ConfigMap
+      name: istio-ingressgateway-options
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: All

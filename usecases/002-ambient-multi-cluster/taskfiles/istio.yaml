@@ -8,6 +8,7 @@ vars:
   ISTIO_CNI_DIR: "{{.ROOT_DIR}}/istio/istio-cni"
   ZTUNNEL_DIR: "{{.ROOT_DIR}}/istio/ztunnel"
   EASTWEST_DIR: "{{.ROOT_DIR}}/istio/eastwest-gateway"
+  INGRESS_DIR: "{{.ROOT_DIR}}/istio/ingress-gateway"
 
 tasks:
   install-gateway-api-all:
@@ -52,6 +53,11 @@ tasks:
     cmds:
     - task: install-eastwest-gateway-ecom-cloud
     - task: install-eastwest-gateway-ecom-onprem
+
+  install-ingress-gateway-all:
+    cmds:
+    - task: install-ingress-gateway-ecom-cloud
+    - task: install-ingress-gateway-ecom-onprem
 
   install-gateway-api-ecom-cloud:
     cmds:
@@ -145,6 +151,18 @@ tasks:
         CONTEXT: kind-ecom-onprem
         DIR: "{{.EASTWEST_DIR}}/ecom-onprem"
 
+  install-ingress-gateway-ecom-cloud:
+    cmds:
+    - task: install-ingress-gateway
+      vars:
+        CONTEXT: kind-ecom-cloud
+
+  install-ingress-gateway-ecom-onprem:
+    cmds:
+    - task: install-ingress-gateway
+      vars:
+        CONTEXT: kind-ecom-onprem
+
   install-gateway-api:
     internal: true
     requires:
@@ -207,3 +225,12 @@ tasks:
     - kustomize build {{.DIR}} | kubectl apply --server-side --context {{.CONTEXT}} -f -
     status:
     - kubectl get gateway istio-eastwestgateway -n istio-system --context {{.CONTEXT}}
+
+  install-ingress-gateway:
+    internal: true
+    requires:
+      vars: [CONTEXT]
+    cmds:
+    - kustomize build {{.INGRESS_DIR}} | kubectl apply --server-side --context {{.CONTEXT}} -f -
+    status:
+    - kubectl get gateway istio-ingressgateway -n istio-ingress --context {{.CONTEXT}}

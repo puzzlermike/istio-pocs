@@ -31,6 +31,9 @@ sudo cloud-provider-kind --enable-lb-port-mapping=false
 # install east-west gateway in both clusters
 task istio:install-eastwest-gateway-all
 
+# install ingress gateway in both clusters (NodePort 30080, reachable on localhost:8080 - cloud / localhost:18080 - onprem)
+task istio:install-ingress-gateway-all
+
 # create remote secrets (cross-cluster service discovery)
 task remote:create-remote-secrets-all
 
@@ -48,6 +51,10 @@ task cluster:clusters-down
 ```
 # deploy helloworld app in both clusters
 task samples:helloworld-all
+
+# call helloworld through the ingress gateways
+curl localhost:8080/hello
+curl localhost:18080/hello
 
 # deploy curl app in both clusters
 task samples:curl-all
