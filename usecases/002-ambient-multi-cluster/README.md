@@ -52,7 +52,7 @@ task cluster:clusters-down
 # deploy helloworld app in both clusters
 task samples:helloworld-all
 
-# call helloworld through the ingress gateways
+# call helloworld through the ingress gateways, traffic is load balanced across clusters because the option AMBIENT_ENABLE_MULTI_NETWORK_INGRESS is set to "true"
 curl localhost:8080/hello
 curl localhost:18080/hello
 
@@ -78,7 +78,9 @@ kubectl exec --context="kind-ecom-onprem" -n curl -c curl \
 - Services that should be accessed from other clusters must be labeled with `istio.io/global: "true"` 
 - In ambient mode, istiod builds the remote network gateway from the peer's east-west Gateway's status.addresses. It does not read spec.addresses for managed gateways
 - For a managed Gateway, status.addresses comes from the Service: the external addresses if any exist, otherwise the ClusterIP and hostname. A NodePort Service has no external address by default, so the ClusterIP is reported
+- pilot-agent environment variable `AMBIENT_ENABLE_MULTI_NETWORK_INGRESS`, If true and AMBIENT_ENABLE_MULTI_NETWORK is also true, it will enable ingress gateways to route requests to clusters on remote networks while by default ingress gateways will keep traffic local.
 
 ## References
 - https://istio.io/latest/docs/ops/deployment/deployment-models/
 - https://istio.io/latest/docs/ambient/install/multicluster/
+- https://istio.io/latest/docs/reference/commands/pilot-agent/
