@@ -1,0 +1,13 @@
+resources:
+- ../../samples/helloworld
+- ../../samples/curl
+- httproute.yaml
+
+patches:
+- target:
+    kind: Service
+    name: helloworld
+  patch: |-
+    - op: add
+      path: /metadata/labels/istio.io~1global
+      value: "true"

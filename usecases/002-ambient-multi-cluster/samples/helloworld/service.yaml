@@ -5,7 +5,6 @@ metadata:
   labels:
     app: helloworld
     service: helloworld
-    istio.io/global: "true"
 spec:
   ports:
     - port: 5000

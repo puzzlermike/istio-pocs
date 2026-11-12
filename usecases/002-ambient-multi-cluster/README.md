@@ -44,20 +44,23 @@ task istio:delete-gateway-api-all
 task cluster:clusters-down
 ```
 
-## Samples
+## Scenarios
 
-### Hello World
+- `samples/` contains the workloads (curl, helloworld), they are not applied directly
+- `scenarios/` composes the samples with everything that defines a behavior (routes, labels, policies)
+- scenarios share the same namespaces, run one at a time and delete the current one before applying another
+
+### 001 Load balancing
+
+Ingress gateway and ztunnel traffic is load balanced across both clusters, no locality failover is configured.
 
 ```
-# deploy helloworld app in both clusters
-task samples:helloworld-all
+# deploy the scenario in both clusters
+task scenarios:001-load-balancing-all
 
 # call helloworld through the ingress gateways, traffic is load balanced across clusters because the option AMBIENT_ENABLE_MULTI_NETWORK_INGRESS is set to "true"
 curl localhost:8080/hello
 curl localhost:18080/hello
-
-# deploy curl app in both clusters
-task samples:curl-all
 
 # verify app traffic is load balanced across both clusters
 kubectl exec --context="kind-ecom-cloud" -n curl -c curl \
@@ -68,6 +71,9 @@ kubectl exec --context="kind-ecom-onprem" -n curl -c curl \
     "$(kubectl get pod --context="kind-ecom-onprem" -n curl -l \
     app=curl -o jsonpath='{.items[0].metadata.name}')" \
     -- curl -sS helloworld.helloworld:5000/hello
+
+# delete the scenario from both clusters
+task scenarios:001-load-balancing-delete-all
 ```
 
 ## Lessons Learned

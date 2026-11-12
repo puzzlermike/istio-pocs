@@ -5,4 +5,4 @@ includes:
   istio: ./taskfiles/istio.yaml
   certs: ./taskfiles/certs.yaml
   remote: ./taskfiles/remote-secrets.yaml
-  samples: ./taskfiles/samples.yaml
+  scenarios: ./taskfiles/scenarios.yaml

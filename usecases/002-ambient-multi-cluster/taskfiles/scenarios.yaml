@@ -1,0 +1,41 @@
+version: '3'
+
+vars:
+  SCENARIOS_DIR: "{{.ROOT_DIR}}/scenarios"
+
+tasks:
+  001-load-balancing-all:
+    cmds:
+    - task: deploy
+      vars:
+        CONTEXT: kind-ecom-cloud
+        DIR: "{{.SCENARIOS_DIR}}/001-load-balancing"
+    - task: deploy
+      vars:
+        CONTEXT: kind-ecom-onprem
+        DIR: "{{.SCENARIOS_DIR}}/001-load-balancing"
+
+  001-load-balancing-delete-all:
+    cmds:
+    - task: delete
+      vars:
+        CONTEXT: kind-ecom-cloud
+        DIR: "{{.SCENARIOS_DIR}}/001-load-balancing"
+    - task: delete
+      vars:
+        CONTEXT: kind-ecom-onprem
+        DIR: "{{.SCENARIOS_DIR}}/001-load-balancing"
+
+  deploy:
+    internal: true
+    requires:
+      vars: [CONTEXT, DIR]
+    cmds:
+    - kustomize build {{.DIR}} | kubectl apply --context {{.CONTEXT}} -f -
+
+  delete:
+    internal: true
+    requires:
+      vars: [CONTEXT, DIR]
+    cmds:
+    - kustomize build {{.DIR}} | kubectl delete --ignore-not-found --context {{.CONTEXT}} -f -
