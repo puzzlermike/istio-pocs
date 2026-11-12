@@ -76,6 +76,40 @@ kubectl exec --context="kind-ecom-onprem" -n curl -c curl \
 task scenarios:001-load-balancing-delete-all
 ```
 
+### 002 Locality Failover
+
+The ingress gateway and ztunnel prefer endpoints in their own network (here network == cluster) by setting the service annotation `networking.istio.io/traffic-distribution: PreferSameZone`. 
+The other cluster is only used when no local endpoint is available.
+To make the answering cluster visible, `ecom-cloud` runs only `helloworld-v1` and `ecom-onprem` only `helloworld-v2`.
+
+```
+# deploy the scenario in both clusters
+task scenarios:002-locality-failover-all
+
+# traffic stays local: cloud always answers v1, onprem always answers v2
+curl localhost:8080/hello
+curl localhost:18080/hello
+kubectl exec --context="kind-ecom-cloud" -n curl -c curl \
+    "$(kubectl get pod --context="kind-ecom-cloud" -n curl -l \
+    app=curl -o jsonpath='{.items[0].metadata.name}')" \
+    -- curl -sS helloworld.helloworld:5000/hello
+kubectl exec --context="kind-ecom-onprem" -n curl -c curl \
+    "$(kubectl get pod --context="kind-ecom-onprem" -n curl -l \
+    app=curl -o jsonpath='{.items[0].metadata.name}')" \
+    -- curl -sS helloworld.helloworld:5000/hello
+
+# failover: remove the local endpoint in cloud, requests are now answered by v2 from onprem
+kubectl --context kind-ecom-cloud -n helloworld scale deploy helloworld-v1 --replicas=0
+curl localhost:8080/hello
+
+# failback: v1 answers again
+kubectl --context kind-ecom-cloud -n helloworld scale deploy helloworld-v1 --replicas=1
+curl localhost:8080/hello
+
+# delete the scenario from both clusters
+task scenarios:002-locality-failover-delete-all
+```
+
 ## Lessons Learned
 
 - `cloud-provider-kind` < v0.12.0 on macOS publishes every LoadBalancer port on the host, so the second east-west gateway (same port `15008`) never gets an IP. Use v0.12.0+ and run it with `--enable-lb-port-mapping=false`; clusters reach each other over the docker network

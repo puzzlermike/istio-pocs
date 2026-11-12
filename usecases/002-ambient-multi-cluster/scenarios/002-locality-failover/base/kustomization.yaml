@@ -1,0 +1,18 @@
+resources:
+- ../../../samples/helloworld
+- ../../../samples/curl
+- httproute.yaml
+
+patches:
+- target:
+    kind: Service
+    name: helloworld
+  patch: |-
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: helloworld
+      annotations:
+        networking.istio.io/traffic-distribution: PreferSameZone
+      labels:
+        istio.io/global: "true"
