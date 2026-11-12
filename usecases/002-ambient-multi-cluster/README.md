@@ -91,3 +91,5 @@ task scenarios:001-load-balancing-delete-all
 - https://istio.io/latest/docs/ops/deployment/deployment-models/
 - https://istio.io/latest/docs/ambient/install/multicluster/
 - https://istio.io/latest/docs/reference/commands/pilot-agent/
+- https://istio.io/latest/docs/ambient/usage/traffic-distribution/
+- https://istio.io/latest/docs/reference/config/networking/destination-rule/#OutlierDetection
