@@ -120,6 +120,7 @@ task scenarios:002-locality-failover-delete-all
 - For a managed Gateway, status.addresses comes from the Service: the external addresses if any exist, otherwise the ClusterIP and hostname. A NodePort Service has no external address by default, so the ClusterIP is reported
 - pilot-agent environment variable `AMBIENT_ENABLE_MULTI_NETWORK_INGRESS`, If true and AMBIENT_ENABLE_MULTI_NETWORK is also true, it will enable ingress gateways to route requests to clusters on remote networks while by default ingress gateways will keep traffic local
 - Traffic entering the ingress gateway stays within the local cluster when `AMBIENT_ENABLE_MULTI_NETWORK_INGRESS` is "false" (the default). Remote endpoints are not offered to the gateway at all, so there is also no failover to the other cluster. To use remote endpoints, set the flag to "true"; to prefer local endpoints with failover, additionally configure locality failover
+- Annotating the Service with `networking.istio.io/traffic-distribution: PreferSameZone` makes ztunnel and the ingress gateway prefer endpoints in their own network (here network == cluster) and use the other cluster only when local endpoints are not Ready or gone
 
 ## References
 - https://istio.io/latest/docs/ops/deployment/deployment-models/
