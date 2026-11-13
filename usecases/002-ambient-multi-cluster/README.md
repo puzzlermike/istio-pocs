@@ -162,6 +162,13 @@ task scenarios:003-error-failover-delete-all
 - pilot-agent environment variable `AMBIENT_ENABLE_MULTI_NETWORK_INGRESS`, If true and AMBIENT_ENABLE_MULTI_NETWORK is also true, it will enable ingress gateways to route requests to clusters on remote networks while by default ingress gateways will keep traffic local
 - Traffic entering the ingress gateway stays within the local cluster when `AMBIENT_ENABLE_MULTI_NETWORK_INGRESS` is "false" (the default). Remote endpoints are not offered to the gateway at all, so there is also no failover to the other cluster. To use remote endpoints, set the flag to "true"; to prefer local endpoints with failover, additionally configure locality failover
 - Annotating the Service with `networking.istio.io/traffic-distribution: PreferSameZone` makes ztunnel and the ingress gateway prefer endpoints in their own network (here network == cluster) and use the other cluster only when local endpoints are not Ready or gone
+- ztunnel is an L4 proxy: it only follows the traffic-distribution annotation, it does not apply `DestinationRule` settings (`failoverPriority`, `outlierDetection`) and has no outlier detection. Outlier detection and failover customization need a waypoint, see https://istio.io/latest/docs/ambient/install/multicluster/failover/
+- Outlier detection ejects an endpoint that returns errors. Only the Envoy proxies apply the `DestinationRule`. The waypoint (for ztunnel traffic) and the ingress gateway (directly, it does not need the waypoint)
+- Waypoints in multicluster: same name in every cluster, and the waypoint Service must be labeled `istio.io/global: "true"` (set via `spec.infrastructure.labels` of the Gateway), see https://istio.io/latest/docs/ambient/install/multicluster/#waypoint-requirements
+- Ingress traffic ignores the service waypoint by default, routing it through the waypoint needs `istio.io/ingress-use-waypoint` and the istiod flag `ENABLE_INGRESS_WAYPOINT_ROUTING`, see https://istio.io/latest/docs/ambient/usage/waypoint/#ingress-and-waypoints
+- Out-of-the-box Istio's `outlierDetection` only counts HTTP status codes and connection failures, matching on headers or body is not possible
+- `maxEjectionPercent` defaults to 10%, set it to 100 when a cluster has a single endpoint, otherwise the only local endpoint is never ejected
+- The generated waypoint Service gets `networking.istio.io/traffic-distribution: PreferClose` automatically ([istiod chart template](https://github.com/istio/istio/blob/release-1.30/manifests/charts/istio-control/istio-discovery/files/waypoint.yaml#L318-L329), [docs](https://istio.io/latest/docs/ambient/usage/traffic-distribution/)), so ztunnel prefers the waypoint of its own cluster
 
 ## References
 - https://istio.io/latest/docs/ops/deployment/deployment-models/
@@ -169,3 +176,6 @@ task scenarios:003-error-failover-delete-all
 - https://istio.io/latest/docs/reference/commands/pilot-agent/
 - https://istio.io/latest/docs/ambient/usage/traffic-distribution/
 - https://istio.io/latest/docs/reference/config/networking/destination-rule/#OutlierDetection
+- https://istio.io/latest/docs/ambient/install/multicluster/failover/
+- https://istio.io/latest/docs/ambient/install/multicluster/#waypoint-requirements
+- https://istio.io/latest/docs/ambient/usage/waypoint/
