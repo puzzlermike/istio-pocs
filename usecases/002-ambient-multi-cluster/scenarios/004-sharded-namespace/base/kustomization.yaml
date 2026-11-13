@@ -1,0 +1,13 @@
+resources:
+- ../../../samples/bookinfo
+- ../../../samples/curl
+- httproute.yaml
+
+patches:
+- target:
+    kind: Service
+    namespace: bookinfo
+  patch: |-
+    - op: add
+      path: /metadata/labels/istio.io~1global
+      value: "true"

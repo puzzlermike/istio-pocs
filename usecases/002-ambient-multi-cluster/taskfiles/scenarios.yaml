@@ -70,6 +70,50 @@ tasks:
         CONTEXT: kind-ecom-onprem
         DIR: "{{.SCENARIOS_DIR}}/003-error-failover/ecom-onprem"
 
+  004-sharded-namespace-all:
+    cmds:
+    - task: deploy
+      vars:
+        CONTEXT: kind-ecom-cloud
+        DIR: "{{.SCENARIOS_DIR}}/004-sharded-namespace/ecom-cloud"
+    - task: deploy
+      vars:
+        CONTEXT: kind-ecom-onprem
+        DIR: "{{.SCENARIOS_DIR}}/004-sharded-namespace/ecom-onprem"
+
+  004-sharded-namespace-delete-all:
+    cmds:
+    - task: delete
+      vars:
+        CONTEXT: kind-ecom-cloud
+        DIR: "{{.SCENARIOS_DIR}}/004-sharded-namespace/ecom-cloud"
+    - task: delete
+      vars:
+        CONTEXT: kind-ecom-onprem
+        DIR: "{{.SCENARIOS_DIR}}/004-sharded-namespace/ecom-onprem"
+
+  004-sharded-namespace-namespace-mismatch-all:
+    cmds:
+    - task: deploy
+      vars:
+        CONTEXT: kind-ecom-cloud
+        DIR: "{{.SCENARIOS_DIR}}/004-sharded-namespace/ecom-cloud"
+    - task: deploy
+      vars:
+        CONTEXT: kind-ecom-onprem
+        DIR: "{{.SCENARIOS_DIR}}/004-sharded-namespace/experiments/namespace-mismatch/ecom-onprem"
+
+  004-sharded-namespace-namespace-mismatch-delete-all:
+    cmds:
+    - task: delete
+      vars:
+        CONTEXT: kind-ecom-cloud
+        DIR: "{{.SCENARIOS_DIR}}/004-sharded-namespace/ecom-cloud"
+    - task: delete
+      vars:
+        CONTEXT: kind-ecom-onprem
+        DIR: "{{.SCENARIOS_DIR}}/004-sharded-namespace/experiments/namespace-mismatch/ecom-onprem"
+
   deploy:
     internal: true
     requires:

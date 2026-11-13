@@ -1,0 +1,12 @@
+namespace: bookinfo-onprem
+resources:
+- ../../../../../../samples/bookinfo
+- ../../../../../../samples/bookinfo/reviews
+
+patches:
+- target:
+    kind: Service
+  patch: |-
+    - op: add
+      path: /metadata/labels/istio.io~1global
+      value: "true"

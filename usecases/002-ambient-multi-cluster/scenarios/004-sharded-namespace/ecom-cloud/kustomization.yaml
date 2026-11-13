@@ -1,0 +1,5 @@
+resources:
+- ../base
+- ../../../samples/bookinfo/productpage
+- ../../../samples/bookinfo/details
+- ../../../samples/bookinfo/ratings
