@@ -1,0 +1,10 @@
+namespace: flaky
+resources:
+- namespace.yaml
+- deployment.yaml
+- service.yaml
+
+configMapGenerator:
+- name: flaky-config
+  files:
+  - default.conf.template

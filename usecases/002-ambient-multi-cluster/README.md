@@ -50,7 +50,7 @@ task cluster:clusters-down
 - `scenarios/` composes the samples with everything that defines a behavior (routes, labels, policies)
 - scenarios share the same namespaces, run one at a time and delete the current one before applying another
 
-### 001 Load balancing
+### 001 Load Balancing
 
 Ingress gateway and ztunnel traffic is load balanced across both clusters, no locality failover is configured.
 
@@ -108,6 +108,47 @@ curl localhost:8080/hello
 
 # delete the scenario from both clusters
 task scenarios:002-locality-failover-delete-all
+```
+
+### 003 Error Failover
+
+Failover when the local workload returns errors, the pod stays Ready. 
+The ingress gateway and the waypoint eject the failing local endpoint with outlier detection and fail over to the other cluster, see the `DestinationRule` in `scenarios/003-error-failover/base`.
+The `flaky` app answers `hello from <cluster>` and returns `503` while the file `/tmp/fail` exists.
+ztunnel does not read DestinationRules and has no outlier detection, that is why the `flaky` service uses a waypoint.
+
+```
+# deploy the scenario in both clusters
+task scenarios:003-error-failover-all
+
+# traffic stays local
+curl localhost:8080/flaky
+curl localhost:18080/flaky
+kubectl exec --context="kind-ecom-cloud" -n curl -c curl \
+    "$(kubectl get pod --context="kind-ecom-cloud" -n curl -l \
+    app=curl -o jsonpath='{.items[0].metadata.name}')" \
+    -- curl -sS flaky.flaky:80/
+kubectl exec --context="kind-ecom-onprem" -n curl -c curl \
+    "$(kubectl get pod --context="kind-ecom-onprem" -n curl -l \
+    app=curl -o jsonpath='{.items[0].metadata.name}')" \
+    -- curl -sS flaky.flaky:80/
+
+# make the flaky pod in cloud return 503
+kubectl --context kind-ecom-cloud -n flaky exec deploy/flaky -- touch /tmp/fail
+
+# the first request can return 503 (outlier detection is reactive), afterwards cloud fails over to onprem
+curl localhost:8080/flaky
+kubectl exec --context="kind-ecom-cloud" -n curl -c curl \
+    "$(kubectl get pod --context="kind-ecom-cloud" -n curl -l \
+    app=curl -o jsonpath='{.items[0].metadata.name}')" \
+    -- curl -sS flaky.flaky:80/
+
+# heal, after the ejection time (1 minute) cloud answers again
+kubectl --context kind-ecom-cloud -n flaky exec deploy/flaky -- rm /tmp/fail
+curl localhost:8080/flaky
+
+# delete the scenario from both clusters
+task scenarios:003-error-failover-delete-all
 ```
 
 ## Lessons Learned

@@ -48,6 +48,28 @@ tasks:
         CONTEXT: kind-ecom-onprem
         DIR: "{{.SCENARIOS_DIR}}/002-locality-failover/ecom-onprem"
 
+  003-error-failover-all:
+    cmds:
+    - task: deploy
+      vars:
+        CONTEXT: kind-ecom-cloud
+        DIR: "{{.SCENARIOS_DIR}}/003-error-failover/ecom-cloud"
+    - task: deploy
+      vars:
+        CONTEXT: kind-ecom-onprem
+        DIR: "{{.SCENARIOS_DIR}}/003-error-failover/ecom-onprem"
+
+  003-error-failover-delete-all:
+    cmds:
+    - task: delete
+      vars:
+        CONTEXT: kind-ecom-cloud
+        DIR: "{{.SCENARIOS_DIR}}/003-error-failover/ecom-cloud"
+    - task: delete
+      vars:
+        CONTEXT: kind-ecom-onprem
+        DIR: "{{.SCENARIOS_DIR}}/003-error-failover/ecom-onprem"
+
   deploy:
     internal: true
     requires:

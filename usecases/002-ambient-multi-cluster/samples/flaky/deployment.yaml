@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaky
+  labels:
+    app: flaky
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flaky
+  template:
+    metadata:
+      labels:
+        app: flaky
+    spec:
+      containers:
+        - name: flaky
+          image: docker.io/library/nginx:1.27-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CLUSTER_NAME
+              value: unknown
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            tcpSocket:
+              port: 80
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/templates
+      volumes:
+        - name: config
+          configMap:
+            name: flaky-config

@@ -1,0 +1,21 @@
+resources:
+- ../../../samples/flaky
+- ../../../samples/curl
+- waypoint.yaml
+- destinationrule.yaml
+- httproute.yaml
+
+patches:
+- target:
+    kind: Service
+    name: flaky
+  patch: |-
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: flaky
+      annotations:
+        networking.istio.io/traffic-distribution: PreferSameZone
+      labels:
+        istio.io/use-waypoint: waypoint
+        istio.io/global: "true"

@@ -1,0 +1,11 @@
+server {
+    listen 80;
+    default_type text/plain;
+
+    location / {
+        if (-f /tmp/fail) {
+            return 503 "error from ${CLUSTER_NAME}\n";
+        }
+        return 200 "hello from ${CLUSTER_NAME}\n";
+    }
+}
